@@ -43,11 +43,15 @@ use:
 
    after login, their should be a table:Table-REST-CRUD.
    press Add. 
+   
    the option MUST be filled:
+   
+   ```
    A. route: the route name. eg: /Danwei
    B. Table big name: the model name of a table. eg: Danwei
    C. Table name: the table name. eg: danwei. ONLY needed if inspected_from_db=1
    D. Inspected from db: set to 1 if table is just from db, not from django model. otherwise set to 0.
+   ```
    
    press Save
    
