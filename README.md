@@ -60,7 +60,7 @@ use:
     and then the rest api is generated already.
 	press OpenApi button to test the api.
 	
-	
+	![admin-page](doc/rest_test_page.png)
    
 
    
