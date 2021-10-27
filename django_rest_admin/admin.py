@@ -24,7 +24,7 @@ class RouteExecAdmin(admin.ModelAdmin):
         #    button_html = """<a class="changelink" href="/custom%s">打开</a>"""%(obj.route)
         #    button_html += """<a class="changelink" href="javascript:void(0)" onclick="update_amis_local_to_editor(%d)">编辑</a>""" % (obj.id)
         #elif obj.re_type=='table':
-        button_html = """<a class="changelink" href="/rest_admin/api%s/">表api</a>"""%(obj.route)
+        button_html = """<a class="changelink" href="/rest_admin/api%s/">OpenApi</a>"""%(obj.route)
         #else:
         #    button_html="""nothing"""
         return format_html(button_html)

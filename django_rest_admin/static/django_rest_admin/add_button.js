@@ -45,7 +45,7 @@ function update_amis_editor_to_local()
 }
 function add_button() {
     var element = document.createElement("div");
-    element.innerHTML="<button type='button' onclick='window.location.href=\"/rest_admin/update_rest/\"' >刷新restAPI</button>";
+    element.innerHTML="<button type='button' onclick='window.location.href=\"/rest_admin/update_rest/\"' >RefreshRestAPI</button>";
     //element.innerHTML= element.innerHTML+"<button type='button' onclick='window.location.href=\"/amis-editor-demo/\"' >打开页面编辑器</button>"
     //element.innerHTML= element.innerHTML+"<button type='button' onclick='update_amis_local_to_editor() ' >本地文件到编辑器</button>"
     //element.innerHTML= element.innerHTML+"<button type='button' onclick='update_amis_editor_to_local()' >编辑器到本地文件</button>"
