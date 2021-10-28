@@ -24,6 +24,8 @@ except Exception as e:
     print('ERROR: django_rest_admin error. rest may not not work as expected.')
     print(e)
 
+def default_list(request):
+    return ''
 
 urlpatterns = [
     path('api/', include(router.urls), name='django_rest_admin_api'),
