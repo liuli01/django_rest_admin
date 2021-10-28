@@ -8,6 +8,11 @@ dist:
 upload:
 	$(PYTHON) -m twine upload dist/*
 
+.PHONY: clean
+clean:
+	rm  -rf build dist  django_rest_admin.egg-info
+
+
 
 .PHONY: test
 test:
