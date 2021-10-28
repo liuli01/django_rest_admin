@@ -1,2 +1,5 @@
 
 *.pyc
+build/*
+dist/*
+django_rest_admin.egg-info/*

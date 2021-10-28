@@ -26,7 +26,7 @@ except Exception as e:
 
 
 urlpatterns = [
-    path('api/', include(router.urls)),
-    path('update_rest/', update_rest),
+    path('api/', include(router.urls), name='django_rest_admin_api'),
+    path('default_list/', default_list, name='django_rest_admin_default_list'),
 ]
 

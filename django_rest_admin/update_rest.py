@@ -4,16 +4,62 @@ __license__ = ""
 __version__ = "1.0"
 
 import os
-
+import json
 from django.http import HttpResponse
 from django.forms.models import model_to_dict
 from .models import RouteExec, ComputedField
-from .update_models import update_models
+from .update_models import update_models,params_update_list,parse_params
+
 
 
 def resort_rest_models(all_rest_dict_list):
+    all_rest_dict_list_new=[]
+
+    # 先按照inspected和id排序
+    all_rest_dict_list.sort(key=lambda x:( 0 if x['inspected_from_db'] is None else x['inspected_from_db'], x['id'] ) )
+
+    #重新设置每个的id
+    index=0
     for i in all_rest_dict_list:
-        print(i)
+        i['id'] =index
+        index+=100
+
+    # 排序前，准备好各种数据：
+    # model_dict={table_big_name:table_dict,...} 获得每个table_big_name对应的id
+    # table_dict['foreign_key_models']=[table_big_name1,...] 依赖关系
+    model_dict={}
+    for i in all_rest_dict_list:
+        model_dict[i['table_big_name']] = i
+
+        i['foreign_key_models'] = []
+
+        if i['inspected_from_db']!=1:
+            continue
+        if (i['foreign_key_id'] is None) or (i['foreign_key_id'] =='') or (i['foreign_key_id'] =='{}') or (i['foreign_key_id'] =='[]'):
+            continue
+
+        fk = json.loads(i['foreign_key_id'])
+        for j in fk:
+            i['foreign_key_models'].append(fk[j][0])
+
+
+    # 根据model_dict 和 table_dict进行排序，顺序由id标识
+    for i in all_rest_dict_list:
+        i['foreign_key_models_smallest'] = i['id']
+        for j in i['foreign_key_models']:
+            if j in model_dict:
+                if i['foreign_key_models_smallest']<model_dict[j]['id']:
+                    i['foreign_key_models_smallest'] = model_dict[j]['id']+1
+        if i['foreign_key_models_smallest']>i['id']:
+            i['id'] = i['foreign_key_models_smallest']
+
+
+
+    all_rest_dict_list.sort(key=lambda x:(  x['id'] ) )
+
+    for i in all_rest_dict_list:
+
+        print(i['id'],  i['table_big_name'], i['foreign_key_models_smallest'])
 
     return all_rest_dict_list
 
@@ -83,6 +129,10 @@ tableBName = routeName
 
 
     return to_write_str
+
+
+
+
 def update_rest(request):
     """
     将各rest的依赖关系顺序整理好
@@ -90,6 +140,8 @@ def update_rest(request):
     """
     all_rest = RouteExec.objects.all()
     all_rest_dict_list=list_model_to_dict(all_rest)
+
+    all_rest_dict_list = params_update_list(all_rest_dict_list)
 
     all_rest_dict_list = resort_rest_models(all_rest_dict_list)
 

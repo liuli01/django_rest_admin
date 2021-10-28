@@ -11,87 +11,6 @@ import json
 from django.http import HttpResponse
 
 
-def update_table_id(depth=0):
-    """
-    更新表的id。
-    根据各表的依赖关系，更新id
-    """
-    if depth > 20:
-        print('update_table_id loop infinite')
-        return 0
-
-    table_exist = 1
-    try:
-        from django.db import connection
-        with connection.cursor() as cursor:
-            cursor.execute("SELECT count(*) FROM route_exec;")
-            row = cursor.fetchone()
-    except Exception as e:
-        print('no route_exec exist? just return')
-        table_exist = 0
-
-    if table_exist == 0:
-        return
-
-    # filter(re_type='table').
-    tables = RouteExec.objects.all().order_by('id')
-
-    # 保存所有的表： ['Danwei', 'Gongyingshang', 'Fenlei', 'Cpfenlei', 'Zhiwei']
-    has_tables = []
-    # {'Danwei':4, } Danwei表的id需要在4前面（id=4的表，需要Danwei表做外键）
-    table_to_up = {}
-    for i in tables:
-        curr_table = i.route.replace('/', '')
-        if curr_table in has_tables:
-            # 如果重复，则后一个不再统计
-            print('WARN: table duplicated in RouteExec', curr_table)
-            continue
-        has_tables.append(curr_table)
-        params_updata(i)
-        if i.params is not None:
-            params = parse_params(i.params)
-            if 'foreign_key_id' not in params:
-                continue
-
-            for fk in params['foreign_key_id']:
-                table_foreign_l = params['foreign_key_id'][fk]
-                table_foreign = table_foreign_l[0]
-                if table_foreign not in has_tables:
-                    if table_foreign not in table_to_up:
-                        table_to_up[table_foreign] = i.id
-                    elif table_to_up[table_foreign] > i.id:
-                        table_to_up[table_foreign] = i.id
-
-    # print('has_tables', has_tables)
-    # print('table_to_up', table_to_up)
-
-    for i in list(table_to_up.keys()):
-        if i not in has_tables:
-            # print('no table found. will not change order', i)
-            del table_to_up[i]
-
-    # 表是需要转移
-    if len(table_to_up) == 0:
-        return 0
-
-    # print('table resotr:', table_to_up)
-    for table_name in table_to_up:
-        table_to_id = table_to_up[table_name]
-        tables_gte = RouteExec.objects.filter(id__gte=table_to_id).all().order_by('-id')
-        for i in tables_gte:
-            iid = i.id
-            i.id = iid + 1
-            i.save()
-            i.id = iid
-            i.delete()
-        tb_target = RouteExec.objects.get(route='/' + table_name)
-        tb_target.id = table_to_id
-        tb_target.save()
-
-        # update_table_id(depth+1)
-
-    return 0
-
 
 def parse_params(params_str):
     ret_dict = {}
@@ -143,6 +62,15 @@ def params_foreign_key_id_update(one_r):
 
     return one_r
 
+
+def params_update_list(all_one_list):
+    all_one_list2=[]
+    for i in all_one_list:
+        i=params_updata(i)
+        all_one_list2.append(i)
+    return all_one_list2
+
+
 def params_updata(one_r: dict):
     one_r = params_foreign_key_id_update(one_r)
 
@@ -166,70 +94,6 @@ def params_updata(one_r: dict):
 
 
 
-def rewrite_model_inspected_when_production():
-    from django.conf import settings
-
-    if settings.IN_PRODUCTION!=True:
-        return
-
-    BASE_DIR = settings.BASE_DIR
-    file_name = str(BASE_DIR) + r'/AmisBack/models_inspected.py'
-    f = open(file_name, 'r')
-    old_file_cont = f.read()
-    f.close()
-    f2 = io.StringIO()
-
-    alread_done = 0
-    # 当前model名
-    curr_class_name = ''
-
-    for one_line in old_file_cont.split('\n'):
-        if len(one_line.strip()) == 0:
-            # 空行
-            f2.write(one_line + "\n")
-            continue
-        one_line_start_space = len(one_line) - len(one_line.lstrip())
-        one_line_striped = one_line.strip()
-        if one_line_striped[0] == '#':
-            # 注释
-            f2.write(one_line + "\n")
-            continue
-        spt = one_line_striped.split(' ')
-        if len(spt) == 0:
-            # 没有空格，不认识的行??
-            f2.write(one_line + "\n")
-            continue
-        if (one_line_start_space==0) and (spt[0] == 'class'):
-            # 获取类名
-            curr_class_name = spt[1].split('(')[0]
-            f2.write(one_line + "\n")
-            continue
-        elif spt[0] == 'class':
-            f2.write(one_line + "\n")
-            continue
-
-        curr_field_name = spt[0]
-        if curr_field_name!='managed':
-            #不是需要的字段，直接复制
-            f2.write(one_line + "\n")
-            continue
-
-        #此处处理managed. 由False改为True
-        if len(spt)!=3:
-            print('unknown line:', spt)
-            continue
-
-        if spt[2]=='True':
-            print('already done. skip')
-            alread_done = 1
-            continue
-        f2.write(' ' * one_line_start_space + "managed = True\n")
-
-    if alread_done==0:
-        cont  = f2.getvalue()
-        f=open(file_name, 'w')
-        f.write(cont)
-        f.close()
 
 
 def update_models(all_rest_dict_list):
@@ -274,7 +138,7 @@ def update_models(all_rest_dict_list):
     foreign_key_dict2 = {}
     for one_r in all_rest_dict_list:
         # if one_r.re_type == 'table':
-        one_r = params_updata(one_r)
+        #one_r = params_updata(one_r)
         params = parse_params(one_r['params'])
         if one_r['inspected_from_db'] != 1:
             continue
