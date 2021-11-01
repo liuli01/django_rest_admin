@@ -38,7 +38,12 @@ def resort_rest_models(all_rest_dict_list):
         if (i['foreign_key_id'] is None) or (i['foreign_key_id'] =='') or (i['foreign_key_id'] =='{}') or (i['foreign_key_id'] =='[]'):
             continue
 
-        fk = json.loads(i['foreign_key_id'])
+        if isinstance(i['foreign_key_id'], str):
+            fk = json.loads(i['foreign_key_id'])
+        elif i['foreign_key_id'] is None:
+            fk={}
+        else:
+            fk = i['foreign_key_id']
         for j in fk:
             i['foreign_key_models'].append(fk[j][0])
 
@@ -58,16 +63,38 @@ def resort_rest_models(all_rest_dict_list):
     all_rest_dict_list.sort(key=lambda x:(  x['id'] ) )
 
     for i in all_rest_dict_list:
-
         print(i['id'],  i['table_big_name'], i['foreign_key_models_smallest'])
 
     return all_rest_dict_list
 
-def write_to_file(to_write_str):
 
-    path1 = os.path.dirname(__file__)
+def update_url_file():
+    from django.conf import settings
+
+    path1 = os.path.join(settings.BASE_DIR, settings.DJANGO_REST_ADMIN_TO_APP)
+    print('write_to_file-path1:', path1)
+    urls_py_file_path = os.path.join(path1, 'urls.py')
+    if os.path.exists(urls_py_file_path):
+        return
+    else:
+        path1=os.path.dirname(__file__)
+        template_file = os.path.join(path1,'urls_template.py')
+        f=open(template_file,'r')
+        temp_content = f.read()
+        f.close()
+        f=open(urls_py_file_path,'w')
+        f.write(temp_content)
+        f.close()
+
+
+
+def write_to_file(to_write_str):
+    update_url_file()
+
+    from django.conf import settings
+    path1 = os.path.join(settings.BASE_DIR, settings.DJANGO_REST_ADMIN_TO_APP)
     print('write_to_file-path1:',path1)
-    urls_rest_py_file_path = os.path.join(path1,'urls_rest.py')
+    urls_rest_py_file_path = os.path.join(path1,'auto_urls_rest.py')
     print('write_to_file:',urls_rest_py_file_path)
     f_to_w = open(urls_rest_py_file_path,'wb')
     f_to_w.write(to_write_str.encode('utf-8'))
@@ -84,8 +111,9 @@ def none_str(kk):
     return 'None' if kk is None else str(kk)
 
 def generate_rest_code(all_rest_dict_list):
-    to_write_str = 'from .models_inspected import *\n'
-    to_write_str +='from .my_rest_api import my_rest_viewsetB\n'
+    to_write_str=''
+    to_write_str +='from django_rest_admin.my_rest_api import my_rest_viewsetB\n'
+    to_write_str += 'from .models import *\n'
     to_write_str += 'from .urls import router\n'
 
     for i in all_rest_dict_list:
@@ -115,15 +143,13 @@ tableBName = routeName
 
         to_write_str +=  "choice_problems = my_rest_viewsetB(" + str(i['table_big_name']) + ", tableBName + 'V',"
         to_write_str += """
-
-                                               model_obj_list=model_obj_list, no_need_login=no_need_login,
-                                               foreign_key_ro=foreign_key_ro, foreign_key_id=foreign_key_id,
-                                               filter_fieldsA=filter_fields,
-                                               search_fieldsA=search_fieldsA, orderingA=ordering,
-                                               ordering_fieldsA=ordering_fields, filter_keys=filter_keys,
-                                               foreign_slug_kf=foreign_slug_kf)
-                                               \n
-                                               """
+               model_obj_list=model_obj_list, no_need_login=no_need_login,
+               foreign_key_ro=foreign_key_ro, foreign_key_id=foreign_key_id,
+               filter_fieldsA=filter_fields,
+               search_fieldsA=search_fieldsA, orderingA=ordering,
+               ordering_fieldsA=ordering_fields, filter_keys=filter_keys,
+               foreign_slug_kf=foreign_slug_kf)
+               \n"""
         to_write_str += '\nrouter.register(routeName, choice_problems) \n'
         to_write_str += '####################################\n'
 
@@ -131,6 +157,7 @@ tableBName = routeName
     return to_write_str
 
 
+from .get_table_foreignkey_param import get_table_foreignkey_param
 
 
 def update_rest(request):
@@ -138,10 +165,29 @@ def update_rest(request):
     将各rest的依赖关系顺序整理好
     依次输出代码至 urls_rest
     """
+    from django.conf import settings
+    if not hasattr(settings, 'DJANGO_REST_ADMIN_TO_APP'):
+        return """DJANGO_REST_ADMIN_TO_APP should be set. django_rest_admin 会: 
+                   1. 数据库中的表转为django的model. 
+                   2. 表的crud的rest api添加。
+                   这两个工作，都会生成代码，所以需要一个单独的app来放置此代码。
+                   这个app可以通过python manage.py startapp myApp来生成。
+                   然后在settings.py 中： DJANGO_REST_ADMIN_TO_APP='myApp'
+                   即可
+        """
+
     all_rest = RouteExec.objects.all()
     all_rest_dict_list=list_model_to_dict(all_rest)
 
     all_rest_dict_list = params_update_list(all_rest_dict_list)
+
+    for i in all_rest_dict_list:
+        if (i['foreign_key_id'] is None) or (i['foreign_key_id']==''):
+            i['foreign_key_id']={}
+        elif isinstance(i['foreign_key_id'], str):
+            i['foreign_key_id'] = json.loads(i['foreign_key_id'])
+        i['foreign_key_id'].update(get_table_foreignkey_param(i['table_name']))
+
 
     all_rest_dict_list = resort_rest_models(all_rest_dict_list)
 
@@ -151,4 +197,6 @@ def update_rest(request):
     write_to_file(to_write_str)
 
 
-    return HttpResponse('generate')
+
+
+    return 'ok'

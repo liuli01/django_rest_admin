@@ -16,19 +16,12 @@ from .update_rest import update_rest
 from .my_rest_api import my_rest_viewsetB
 import json
 router = routers.DefaultRouter()
-#from .urls_rest import *
-
-try:
-    from .urls_rest import *
-except Exception as e:
-    print('ERROR: django_rest_admin error. rest may not not work as expected.')
-    print(e)
 
 def default_list(request):
     return ''
 
 urlpatterns = [
     path('api/', include(router.urls), name='django_rest_admin_api'),
-    path('default_list/', default_list, name='django_rest_admin_default_list'),
+    path('default_list/', default_list, name='django_rest_admin_self_default_list'),
 ]
 

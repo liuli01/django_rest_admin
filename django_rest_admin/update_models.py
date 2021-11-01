@@ -93,9 +93,6 @@ def params_updata(one_r: dict):
     return one_r
 
 
-
-
-
 def update_models(all_rest_dict_list):
     """
     更新模型文件
@@ -107,8 +104,8 @@ def update_models(all_rest_dict_list):
     from django.conf import settings
     import os
 
-    path1 = os.path.dirname(__file__)
-    file_name = os.path.join(path1,'models_inspected.py')
+    path1 = os.path.join(settings.BASE_DIR, settings.DJANGO_REST_ADMIN_TO_APP)
+    file_name = os.path.join(path1,'models.py')
 
     print(file_name)
 
@@ -148,6 +145,8 @@ def update_models(all_rest_dict_list):
                 foreign_key_dict2[one_r['table_big_name']][k + '_id'] = params['foreign_key_id'][k]
 
     print('update_models foreign_key_dict2:', foreign_key_dict2)
+
+    all_rest_dict_dict={i['table_big_name']:i for i in all_rest_dict_list}
 
     # 当前model名
     curr_class_name = ''
@@ -200,9 +199,14 @@ def update_models(all_rest_dict_list):
 
 
         # managed处理
-        if curr_field_name == 'managed' and len(spt) == 3 and spt[2] != 'True':
-            # 不是需要的字段，直接复制
-            f2.write(' ' * one_line_start_space + "managed = True\n")
+        if curr_field_name == 'managed' and len(spt) == 3:
+            curr_param = all_rest_dict_dict[curr_class_name]['is_managed']
+            if curr_param=='True':
+                # 不是需要的字段，直接复制
+                f2.write(' ' * one_line_start_space + "managed = True\n")
+            else:
+                # 不是需要的字段，直接复制
+                f2.write(' ' * one_line_start_space + "managed = False\n")
             continue
 
         if curr_class_name not in foreign_key_dict2:
@@ -238,10 +242,10 @@ def update_models(all_rest_dict_list):
         continue
 
     # model写完。此处添加receiver
-    path1 = os.path.dirname(__file__)
     file_name_receiver = os.path.join(path1,'models_receiver.py')
-    f_recv = open(file_name_receiver, 'r')
-    f2.write(f_recv.read())
+    if os.path.exists(file_name_receiver):
+        f_recv = open(file_name_receiver, 'r')
+        f2.write(f_recv.read())
 
     f2.close()
 

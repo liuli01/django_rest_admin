@@ -5,8 +5,8 @@ __version__ = "1.0"
 
 from django.urls import reverse
 
-def get_app_url_base():
-    front_path = reverse('django_rest_admin_default_list')
+def get_app_url_base(url_name='django_rest_admin_default_list'):
+    front_path = reverse(url_name)
     if front_path[-1]=='/':
         front_path=front_path[:-1]
 

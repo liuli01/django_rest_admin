@@ -36,7 +36,11 @@ def my_rest_viewsetB(model_object,model_class_name, model_obj_list='__all__', fo
     :param optional_fields1: 字段是否是可选，用于数据库写入设置
     :return:
     """
-    #print('my_rest_viewsetB', model_obj_list)
+    if (foreign_key_ro is not None) and (len(foreign_key_ro)>0) and (model_obj_list is not None) and (model_obj_list!='__all__'):
+        for i in foreign_key_ro:
+            if i not in model_obj_list:
+                model_obj_list.append(i)
+
     def add_foreign_serializer(ModName, fields_list):
         class TrackSerializer(serializers.ModelSerializer):
             class Meta:
