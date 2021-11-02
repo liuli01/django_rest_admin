@@ -181,6 +181,8 @@ def update_models(all_rest_dict_list):
             re1 = RouteExec.objects.filter(table_big_name=curr_class_name, inspected_from_db=1).all()
             if len(re1)<1:
                 print('skip this table',curr_class_name, len(re1))
+                f2.write(one_line + "\n")
+                continue
             cf = ComputedField.objects.filter(route_exec=re1[0]).all()
             for cfi in cf:
                 f2.write(' ' * one_line_start_space+cfi.func_text.replace('\r\n','\n'))
@@ -200,6 +202,16 @@ def update_models(all_rest_dict_list):
 
         # managed处理
         if curr_field_name == 'managed' and len(spt) == 3:
+            if curr_class_name not in all_rest_dict_dict:
+                #此class未找到，直接忽略
+                print('django_rest_admin:skip class:', curr_class_name)
+                f2.write(one_line + "\n")
+                continue
+            if 'is_managed' not in all_rest_dict_dict[curr_class_name]:
+                # 此class未找到，直接忽略
+                print('django_rest_admin:skip class2:', curr_class_name)
+                f2.write(one_line + "\n")
+                continue
             curr_param = all_rest_dict_dict[curr_class_name]['is_managed']
             if curr_param=='True':
                 # 不是需要的字段，直接复制
