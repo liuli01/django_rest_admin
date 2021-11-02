@@ -42,14 +42,20 @@ class RouteExecAdmin(admin.ModelAdmin):
         return my_urls + urls
 
     def button_link(self, obj):
-        app_base = get_app_url_base()
-        button_html = """<a class="changelink" href=""" + app_base+ """%s/>OpenApi</a>"""%(obj.route)
+        try:
+            app_base = get_app_url_base()
+            button_html = """<a class="changelink" href=""" + app_base + """%s/>OpenApi</a>""" % (obj.route)
+        except Exception as e:
+            from django.conf import settings
+            if hasattr(settings,'DJANGO_REST_ADMIN_TO_APP'):
+                button_html = '<a class="changelink" />请设置%s.urls到项目urls.py中</a>'%settings.DJANGO_REST_ADMIN_TO_APP
+            else:
+                button_html = '<a class="changelink" />请设置settings.DJANGO_REST_ADMIN_TO_APP</a>'
         return format_html(button_html)
 
     button_link.short_description = "打开"
 
     def button2_link(self, obj):
-        app_base = get_app_url_base('django_rest_admin_self_default_list')
         button_html = """<a class="changelink" href=set_table_default/%d/>填充</a>""" % (obj.id)
         return format_html(button_html)
 
