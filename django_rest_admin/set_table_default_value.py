@@ -5,6 +5,7 @@ __version__ = "1.0"
 
 from .get_table_foreignkey_param import get_table_fields, get_table_foreignkey_param
 import json
+import re
 
 def set_table_default_value(obj_to_mod):
     """
@@ -19,9 +20,9 @@ def set_table_default_value(obj_to_mod):
     if (i.is_managed is None) or (i.is_managed==''):
         i.is_managed=1
     if (i.route is None) or (i.route ==''):
-        i.route='/' + i.table_name.title()
+        i.route='/' + re.sub(r'[^a-zA-Z0-9]', '', i.table_name.title())
     if (i.table_big_name is None) or (i.table_big_name==''):
-        i.table_big_name = i.table_name.title()
+        i.table_big_name = re.sub(r'[^a-zA-Z0-9]', '', i.table_name.title())
     if i.foreign_key_id is None:
         i.foreign_key_id = get_table_foreignkey_param(i.table_name)
     if i.ordering_fields is None:
@@ -43,6 +44,9 @@ def set_table_default_value(obj_to_mod):
         for j in foreign_key:
             field_list = get_table_fields(foreign_key[j][2], 0)
             for k in field_list:
+                if len(j)>3:
+                    if j[-3:]=='_id':
+                        j=j[:-3]
                 i.foreign_key_ro[str(j)+'_' + str(k)] = str(j)+'.' + str(k)
 
 

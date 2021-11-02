@@ -2,7 +2,7 @@ __author__ = "songjiangshan"
 __copyright__ = "Copyright (C) 2021 songjiangshan \n All Rights Reserved."
 __license__ = ""
 __version__ = "1.0"
-
+import re
 
 def get_models_param_from_db(table_name, add_real_table_name=0):
     """
@@ -99,9 +99,9 @@ def get_table_foreignkey_param_using_pragma(table_name, add_real_table_name=0):
         row_dict = {'id': row[0], 'seq': row[1], 'table': row[2], 'from': row[3], 'to': row[4], 'on_update': row[5],
                     'on_delete': row[6], 'match': row[7]}
         if add_real_table_name==1:
-            foreign_key_id[row_dict['from']] = [row_dict['table'].title(), row_dict['on_delete'], row_dict['table']]
+            foreign_key_id[row_dict['from']] = [re.sub(r'[^a-zA-Z0-9]', '', row_dict['table'].title()), row_dict['on_delete'], row_dict['table']]
         else:
-            foreign_key_id[row_dict['from']] = [row_dict['table'].title(), row_dict['on_delete']]
+            foreign_key_id[row_dict['from']] = [re.sub(r'[^a-zA-Z0-9]', '', row_dict['table'].title()), row_dict['on_delete']]
 
     return foreign_key_id
 
@@ -114,7 +114,7 @@ def get_table_foreignkey_param(table_name, add_real_table_name=0):
     ver = django.get_version()
     major_ver = ver.split('.')[0]
     major_ver=int(major_ver)
-    if major_ver<4:
+    if major_ver<8:
         return get_table_foreignkey_param_using_pragma(table_name, add_real_table_name)
 
     else:

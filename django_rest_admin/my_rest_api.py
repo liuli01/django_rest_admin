@@ -36,6 +36,8 @@ def my_rest_viewsetB(model_object,model_class_name, model_obj_list='__all__', fo
     :param optional_fields1: 字段是否是可选，用于数据库写入设置
     :return:
     """
+    if filter_keys is None:
+        filter_keys=[]
     if (foreign_key_ro is not None) and (len(foreign_key_ro)>0) and (model_obj_list is not None) and (model_obj_list!='__all__'):
         for i in foreign_key_ro:
             if i not in model_obj_list:
@@ -82,38 +84,37 @@ def my_rest_viewsetB(model_object,model_class_name, model_obj_list='__all__', fo
             extra_kwargs = {i: {"required": False, "allow_null": True} for i in optional_fields1}
 
     class GoodsFilter(django_filters.rest_framework.FilterSet):
-        if filter_keys is not None:
-            for i in filter_keys:
-                if ('filter_type' not in i) or ('filter_name' not in i) or ('field_name' not in i) or (
-                        'lookup_expr' not in i):
-                    print('WARN:filter no type will not effect', i, model_class_name)
-                    continue
-                if i['filter_type'] == 'number':
-                    locals()[i['filter_name']] = django_filters.NumberFilter(field_name=i['field_name'], lookup_expr=i['lookup_expr'])
-                elif i['filter_type'] == 'text':
-                    locals()[i['filter_name']] = django_filters.CharFilter(field_name=i['field_name'], lookup_expr=i['lookup_expr'])
-                elif i['filter_type'] == 'bool':
-                    locals()[i['filter_name']] = django_filters.BooleanFilter(field_name=i['field_name'], lookup_expr=i['lookup_expr'])
-                elif i['filter_type'] == 'date_range':
-                    locals()[i['filter_name']] = django_filters.DateFromToRangeFilter(field_name=i['field_name'], lookup_expr='range')
-                elif i['filter_type'] == 'time_range':
-                    locals()[i['filter_name']] = django_filters.TimeRangeFilter(field_name=i['field_name'],
-                                                                                  lookup_expr='range')
-                elif i['filter_type'] == 'date':
-                    locals()[i['filter_name']] = django_filters.DateFilter(field_name=i['field_name'], lookup_expr=i['lookup_expr'])
-                elif i['filter_type'] == 'time':
-                    locals()[i['filter_name']] = django_filters.TimeFilter(field_name=i['field_name'], lookup_expr=i['lookup_expr'])
-                elif i['filter_type'] == 'datetime':
-                    locals()[i['filter_name']] = django_filters.DateTimeFilter(field_name=i['field_name'], lookup_expr=i['lookup_expr'])
-                elif i['filter_type'] == 'isodatetime':
-                    locals()[i['filter_name']] = django_filters.IsoDateTimeFilter(field_name=i['field_name'],
-                                                                           lookup_expr=i['lookup_expr'])
-                else:
-                    print('WARN: unknown filter type:', i['filter_type'], model_class_name, i)
+        for i in filter_keys:
+            if ('filter_type' not in i) or ('filter_name' not in i) or ('field_name' not in i) or (
+                    'lookup_expr' not in i):
+                print('WARN:filter no type will not effect', i, model_class_name)
+                continue
+            if i['filter_type'] == 'number':
+                locals()[i['filter_name']] = django_filters.NumberFilter(field_name=i['field_name'], lookup_expr=i['lookup_expr'])
+            elif i['filter_type'] == 'text':
+                locals()[i['filter_name']] = django_filters.CharFilter(field_name=i['field_name'], lookup_expr=i['lookup_expr'])
+            elif i['filter_type'] == 'bool':
+                locals()[i['filter_name']] = django_filters.BooleanFilter(field_name=i['field_name'], lookup_expr=i['lookup_expr'])
+            elif i['filter_type'] == 'date_range':
+                locals()[i['filter_name']] = django_filters.DateFromToRangeFilter(field_name=i['field_name'], lookup_expr='range')
+            elif i['filter_type'] == 'time_range':
+                locals()[i['filter_name']] = django_filters.TimeRangeFilter(field_name=i['field_name'],
+                                                                              lookup_expr='range')
+            elif i['filter_type'] == 'date':
+                locals()[i['filter_name']] = django_filters.DateFilter(field_name=i['field_name'], lookup_expr=i['lookup_expr'])
+            elif i['filter_type'] == 'time':
+                locals()[i['filter_name']] = django_filters.TimeFilter(field_name=i['field_name'], lookup_expr=i['lookup_expr'])
+            elif i['filter_type'] == 'datetime':
+                locals()[i['filter_name']] = django_filters.DateTimeFilter(field_name=i['field_name'], lookup_expr=i['lookup_expr'])
+            elif i['filter_type'] == 'isodatetime':
+                locals()[i['filter_name']] = django_filters.IsoDateTimeFilter(field_name=i['field_name'],
+                                                                       lookup_expr=i['lookup_expr'])
+            else:
+                print('WARN: unknown filter type:', i['filter_type'], model_class_name, i)
 
         class Meta:
             model = model_object
-            fields = [ (fk1['filter_name'] for fk1 in filter_keys) if filter_keys is not None else 'id']
+            fields = [fk1['filter_name'] for fk1 in filter_keys]
 
     GoodsFilter.__name__= model_class_name+'SFilter'
 
