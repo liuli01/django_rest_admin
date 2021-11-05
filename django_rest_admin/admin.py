@@ -30,7 +30,7 @@ class DbTableToRestAdmin(admin.ModelAdmin):
             table_rcd_id = i.id
 
         return
-    selected_table_to_api.short_description ='生成新的api'
+    selected_table_to_api.short_description ='添加api'
 
 
     def update_table_action(self, request):
