@@ -119,7 +119,8 @@ def generate_rest_code(all_rest_dict_list):
     for i in all_rest_dict_list:
         to_write_str+='####################################\n'
         to_write_str += '#for route'+i['route']+'\n'
-        to_write_str += i['import_py_code']+'\n'
+        if i['import_py_code'] is not None:
+            to_write_str += i['import_py_code']+'\n'
         to_write_str += 'routeName="' + i['route']+'"\n'
         to_write_str += """
 if routeName[0] == '/':
@@ -167,13 +168,7 @@ def update_rest(request):
     """
     from django.conf import settings
     if not hasattr(settings, 'DJANGO_REST_ADMIN_TO_APP'):
-        return """DJANGO_REST_ADMIN_TO_APP should be set. django_rest_admin 会: 
-                   1. 数据库中的表转为django的model. 
-                   2. 表的crud的rest api添加。
-                   这两个工作，都会生成代码，所以需要一个单独的app来放置此代码。
-                   这个app可以通过python manage.py startapp myApp来生成。
-                   然后在settings.py 中： DJANGO_REST_ADMIN_TO_APP='myApp'
-                   即可
+        return """DJANGO_REST_ADMIN_TO_APP in project settings.py should be set. 
         """
 
     all_rest = RouteExec.objects.all()
@@ -195,8 +190,5 @@ def update_rest(request):
 
     to_write_str=generate_rest_code(all_rest_dict_list)
     write_to_file(to_write_str)
-
-
-
 
     return 'ok'

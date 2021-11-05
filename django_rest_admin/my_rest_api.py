@@ -42,6 +42,11 @@ def my_rest_viewsetB(model_object,model_class_name, model_obj_list='__all__', fo
         for i in foreign_key_ro:
             if i not in model_obj_list:
                 model_obj_list.append(i)
+    if (foreign_key_id is not None) and (len(foreign_key_id) > 0) and (model_obj_list is not None) and (
+            model_obj_list != '__all__'):
+        for i in foreign_key_id:
+            if i not in model_obj_list:
+                model_obj_list.append(i)
 
     def add_foreign_serializer(ModName, fields_list):
         class TrackSerializer(serializers.ModelSerializer):

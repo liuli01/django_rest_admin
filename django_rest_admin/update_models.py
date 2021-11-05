@@ -120,6 +120,11 @@ def update_models(all_rest_dict_list):
         if i['inspected_from_db'] !=1:
             continue
         table_list.append(i['table_name'])
+        if i['import_py_code'] is not None:
+            f.write(i['import_py_code']+'\n')
+
+    #去除重复的table
+    table_list = list(set(table_list))
     if len(table_list) > 0:
         call_command("inspectdb", table_list, stdout=f)
     else:
@@ -142,7 +147,7 @@ def update_models(all_rest_dict_list):
         if 'foreign_key_id' in params:
             foreign_key_dict2[one_r['table_big_name']] = {}
             for k in params['foreign_key_id']:
-                foreign_key_dict2[one_r['table_big_name']][k + '_id'] = params['foreign_key_id'][k]
+                foreign_key_dict2[one_r['table_big_name']][k] = params['foreign_key_id'][k]
 
     print('update_models foreign_key_dict2:', foreign_key_dict2)
 

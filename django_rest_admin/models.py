@@ -37,7 +37,7 @@ class RouteExec(models.Model):
 
     class Meta:
         managed = True
-        verbose_name_plural = 'table-REST-CRUD'
+        verbose_name_plural = 'REST接口列表'
         db_table = 'rest_admin_table_crud'
 
 
@@ -49,3 +49,18 @@ class ComputedField(models.Model):
         managed = True
         verbose_name_plural = '计算函数字段'
         db_table = 'rest_admin_table_crud_computed_field'
+
+class DbTableToRest(models.Model):
+    table_name = models.TextField(blank=True, null=True,
+                                  help_text='表名')
+    in_app_name = models.TextField(blank=True, null=True,
+                                  help_text='表所在的app')
+    model_name = models.TextField(blank=True, null=True,
+                                  help_text='表的model名')
+    has_api = models.IntegerField(blank=True, null=True, help_text='是否已经生成了api')
+
+
+    class Meta:
+        managed = True
+        verbose_name_plural = 'table列表'
+        db_table = 'rest_admin_table_crud_to_rest'

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import RouteExec,ComputedField
+from .models import RouteExec,ComputedField,DbTableToRest
 from django.contrib import admin
 from django.utils.html import format_html
 from django.urls import path, include
@@ -11,12 +11,71 @@ from .model_field import JSONField, CodeField
 from .update_rest import update_rest
 from .get_app_url_base import get_app_url_base
 from .set_table_default_value import set_table_default_value
-# Register your models here.
+from .update_table_list import update_table_list
 
+# Register your models here.
 
 
 class ComputedFieldAdmin(admin.TabularInline):
     model = ComputedField
+
+
+class DbTableToRestAdmin(admin.ModelAdmin):
+    change_list_template = "html/table_to_rest_list.html"
+
+    actions = ["selected_table_to_api"]
+
+    def selected_table_to_api(self, request, queryset):
+        for i in queryset:
+            table_rcd_id = i.id
+
+        return
+    selected_table_to_api.short_description ='生成新的api'
+
+
+    def update_table_action(self, request):
+        message_to_show = update_table_list(request)
+        self.message_user(request, message_to_show)
+        return HttpResponseRedirect("../")
+
+    def add_table_to_api(self,request, id):
+        rex = RouteExec()
+        rex.table_name = DbTableToRest.objects.get(id=id).table_name
+        rex.save()
+        message_to_show = set_table_default_value(rex)
+        self.message_user(request, message_to_show)
+
+        return HttpResponseRedirect("../../")
+
+    def get_urls(self):
+        urls = super().get_urls()
+        my_urls = [
+            path('update_table/', self.update_table_action),
+            path('add_table_api/<int:id>/', self.add_table_to_api),
+        ]
+        return my_urls + urls
+
+    def button2_link(self, obj):
+        button_html = """<a class="changelink" href=add_table_api/%d/>添加api</a>""" % (obj.id)
+        return format_html(button_html)
+
+    button2_link.short_description = "添加此表为api"
+
+    list_display = ['id', 'table_name','in_app_name', 'has_api', 'button2_link']
+    formfield_overrides = {
+            JSONField: {'widget': JsonEditorWidget},
+            CodeField: {'widget': CodeEditorWidget},
+        }
+
+    class Media:
+        css = {
+            'all': ( 'django_rest_admin/jsoneditor.css',)
+        }
+        js = ('django_rest_admin/jsoneditor.js', 'django_rest_admin/jquery-3.6.0.min.js')
+
+
+
+
 
 class RouteExecAdmin(admin.ModelAdmin):
     inlines = [ComputedFieldAdmin, ]
@@ -61,7 +120,7 @@ class RouteExecAdmin(admin.ModelAdmin):
 
     button2_link.short_description = "自动填充空项"
 
-    list_display = ['id', 'route','button2_link',  'button_link']
+    list_display = ['id', 'route', 'table_name', 'button2_link',  'button_link']
     formfield_overrides = {
             JSONField: {'widget': JsonEditorWidget},
             CodeField: {'widget': CodeEditorWidget},
@@ -74,6 +133,6 @@ class RouteExecAdmin(admin.ModelAdmin):
         js = ('django_rest_admin/jsoneditor.js', 'django_rest_admin/jquery-3.6.0.min.js')
 
 
+admin.site.register(DbTableToRest, DbTableToRestAdmin)
 admin.site.register(RouteExec, RouteExecAdmin)
-
 

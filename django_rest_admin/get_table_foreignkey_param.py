@@ -4,7 +4,7 @@ __license__ = ""
 __version__ = "1.0"
 import re
 
-def get_models_param_from_db(table_name, add_real_table_name=0):
+def get_models_param_from_inspectdb(table_name, add_real_table_name=0):
     """
         {"user":["User", "CASCADE"], "article":["Article", "SET_NULL"]}'
     """
@@ -115,8 +115,26 @@ def get_table_foreignkey_param(table_name, add_real_table_name=0):
     major_ver = ver.split('.')[0]
     major_ver=int(major_ver)
     if major_ver<8:
-        return get_table_foreignkey_param_using_pragma(table_name, add_real_table_name)
+        key_dict = get_table_foreignkey_param_using_pragma(table_name, add_real_table_name)
+        for i in list(key_dict.keys()):
+            if (len(i)>3) and (i[-3:]=='_id'):
+                old_k = key_dict[i]
+                del key_dict[i]
+                i=i[:-3]
+                key_dict[i]=old_k
 
+        for i in list(key_dict.keys()):
+            if len(key_dict[i])>=2:
+                if key_dict[i][1]=='NO ACTION':
+                    key_dict[i][1]='DO_NOTHING'
+                elif key_dict[i][1]=='CASCADE':
+                    key_dict[i][1]='CASCADE'
+                elif key_dict[i][1]=='SET NULL':
+                    key_dict[i][1]='SET_NULL'
+                #pragma 对于ondelete: "NO ACTION"--> "NO_NOTHING"
+
+
+        return key_dict
     else:
-        return get_models_param_from_db(table_name, add_real_table_name)
+        return get_models_param_from_inspectdb(table_name, add_real_table_name)
 
