@@ -59,6 +59,8 @@ class DbTableToRest(models.Model):
                                   help_text='表的model名')
     has_api = models.IntegerField(blank=True, null=True, help_text='是否已经生成了api')
 
+    t_type = models.TextField(blank=True, null=True,
+                                  help_text='table/view')
 
     class Meta:
         managed = True

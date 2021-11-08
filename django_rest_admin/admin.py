@@ -61,7 +61,7 @@ class DbTableToRestAdmin(admin.ModelAdmin):
 
     button2_link.short_description = "添加此表为api"
 
-    list_display = ['id', 'table_name','in_app_name', 'has_api', 'button2_link']
+    list_display = ['id', 'table_name','in_app_name',  'model_name', 'has_api', 't_type', 'button2_link']
     formfield_overrides = {
             JSONField: {'widget': JsonEditorWidget},
             CodeField: {'widget': CodeEditorWidget},

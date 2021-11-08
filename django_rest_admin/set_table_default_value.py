@@ -27,7 +27,10 @@ def set_table_default_value(obj_to_mod):
         i.import_py_code=None
 
         if (i.is_managed is None) or (i.is_managed==''):
-            i.is_managed='True'
+            if (len(table_infos)==0) or table_infos[0].t_type!='view':
+                i.is_managed='True'
+            else:
+                i.is_managed = 'False'
 
         if (i.table_big_name is None) or (i.table_big_name==''):
             i.table_big_name = re.sub(r'[^a-zA-Z0-9]', '', i.table_name.title())
@@ -36,12 +39,10 @@ def set_table_default_value(obj_to_mod):
         #其他app中的表，直接import
         app_name = table_infos[0].in_app_name
         i.import_py_code = 'from '+app_name+'.models import '+table_infos[0].model_name+'\n'
-        i.inspected_from_db=1
+        if i.inspected_from_db is None:
+            i.inspected_from_db=0
         i.is_managed='False'
         i.table_big_name = table_infos[0].model_name
-
-
-
 
     if (i.route is None) or (i.route ==''):
         route = '/' + re.sub(r'[^a-zA-Z0-9]', '', i.table_name.title())

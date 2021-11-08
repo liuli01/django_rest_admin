@@ -6,14 +6,16 @@ from django.views.generic.base import RedirectView
 
 from django.urls import re_path, path, include
 from rest_framework import routers
-
+import traceback
 router = routers.DefaultRouter()
 
 try:
     from .auto_urls_rest import *
 except Exception as e:
+    traceback.print_exc()
     print('ERROR: django_rest_admin error. rest may not not work as expected.')
     print(e)
+
 
 def default_list(request):
     """
