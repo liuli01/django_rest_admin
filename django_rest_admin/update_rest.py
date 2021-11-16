@@ -7,6 +7,8 @@ import os
 import json
 from django.http import HttpResponse
 from django.forms.models import model_to_dict
+from django_rest_admin.get_app_url_base import get_app_url_base
+
 from .models import RouteExec, ComputedField
 from .update_models import update_models,params_update_list,parse_params
 
@@ -117,6 +119,8 @@ def generate_rest_code(all_rest_dict_list):
     to_write_str += 'from .urls import router\n'
 
     for i in all_rest_dict_list:
+        if i['route'] is None:
+            continue
         to_write_str+='####################################\n'
         to_write_str += '#for route'+i['route']+'\n'
         if i['import_py_code'] is not None:
@@ -170,6 +174,13 @@ def update_rest(request):
     if not hasattr(settings, 'DJANGO_REST_ADMIN_TO_APP'):
         return """DJANGO_REST_ADMIN_TO_APP in project settings.py should be set. 
         """
+
+    try:
+        app_base = get_app_url_base()
+    except Exception as e:
+        return "请设置%s.urls到项目urls.py中,然后点击 生成RestAPI"%settings.DJANGO_REST_ADMIN_TO_APP
+
+
 
     all_rest = RouteExec.objects.all()
     all_rest_dict_list=list_model_to_dict(all_rest)

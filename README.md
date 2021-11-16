@@ -20,16 +20,27 @@ install:
     'django_rest_admin',
 ```
 
-3. add path in project urls.py: 
+3. start restapi app(the app name can change by user):
+```
+ python manage.py startapp myRestApiApp
+```
+  add myRestApiApp to INSTALLED_APPS:
+```
+    'myRestApiApp',
+``` 
 
-```
-from django.contrib import admin
-from django.urls import path,include
-urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('rest_admin/', include('django_rest_admin.urls')), <<--this line is what you should add
+4. create admin, login to /admin/
+   to django_rest_admin --REST接口列表--生成RestAPI
+    
+5. add urls:
+from django.urls import include
+urlpatterns=[
+path('api/', include ('myRestApiApp.urls')), #<<--add this line in eht list
+
 ]
-```
+
+6. finished!
+
 
 
 use:
