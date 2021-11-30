@@ -28,7 +28,7 @@ class DbTableToRestAdmin(admin.ModelAdmin):
     def selected_table_to_api(self, request, queryset):
         for i in queryset:
             table_rcd_id = i.id
-
+            self.add_table_to_api(request, table_rcd_id)
         return
     selected_table_to_api.short_description ='添加api'
 
