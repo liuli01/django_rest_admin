@@ -91,7 +91,6 @@ def update_url_file():
 
 
 def write_to_file(to_write_str):
-    update_url_file()
 
     from django.conf import settings
     path1 = os.path.join(settings.BASE_DIR, settings.DJANGO_REST_ADMIN_TO_APP)
@@ -178,6 +177,7 @@ def update_rest(request):
     try:
         app_base = get_app_url_base()
     except Exception as e:
+        update_url_file()
         return "请设置%s.urls到项目urls.py中,然后点击 生成RestAPI"%settings.DJANGO_REST_ADMIN_TO_APP
 
 
@@ -200,6 +200,7 @@ def update_rest(request):
     update_models(all_rest_dict_list)
 
     to_write_str=generate_rest_code(all_rest_dict_list)
+    update_url_file()
     write_to_file(to_write_str)
 
     return 'ok'

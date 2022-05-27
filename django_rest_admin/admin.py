@@ -1,3 +1,4 @@
+from  django.contrib import messages
 from django.contrib import admin
 from .models import RouteExec,ComputedField,DbTableToRest
 from django.contrib import admin
@@ -83,7 +84,10 @@ class RouteExecAdmin(admin.ModelAdmin):
 
     def update_rest_action(self, request):
         message_to_show = update_rest(request)
-        self.message_user(request, message_to_show)
+        if message_to_show=='ok':
+            self.message_user(request, message_to_show, level=messages.INFO)
+        else:
+            self.message_user(request, message_to_show, level=messages.WARNING)
         return HttpResponseRedirect("../")
 
     def set_table_default(self, request, id):
