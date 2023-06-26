@@ -30,6 +30,8 @@ install:
 ```
     'myRestApiApp',
 ``` 
+4 setings.py set apiapp
+write below in settings.py:
 
 add this line in settings.py
 
@@ -38,17 +40,17 @@ DJANGO_REST_ADMIN_TO_APP='myRestApiApp'
 ```
 
 
-4. create admin user using command:
+5. create admin user using command:
 ```python manage.py createsuperuser```
 
-5. start project using:
+6. start project using:
 
 ``` python manage.py runserver 0.0.0.0:8000 ```
 
-6. login to /admin/
+7. login to /admin/
    in django_rest_admin --REST接口列表 --click button --生成RestAPI
     
-7. add urls:
+8. add urls:
 
 ```
 from django.urls import include
@@ -58,7 +60,7 @@ path('api/', include ('myRestApiApp.urls')), #<<--add this line in the list
 ]
 ```
 
-8. finished!
+9. finished!
 
 
 
