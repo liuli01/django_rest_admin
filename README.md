@@ -21,13 +21,22 @@ install:
 ```
 
 3. start restapi app(the app name can change by user):
+
 ```
  python manage.py startapp myRestApiApp
 ```
   add myRestApiApp to INSTALLED_APPS:
+
 ```
     'myRestApiApp',
 ``` 
+
+add this line in settings.py
+
+```
+DJANGO_REST_ADMIN_TO_APP='myRestApiApp'
+```
+
 
 4. create admin user using command:
 ```python manage.py createsuperuser```
@@ -40,11 +49,14 @@ install:
    in django_rest_admin --REST接口列表 --click button --生成RestAPI
     
 7. add urls:
+
+```
 from django.urls import include
 urlpatterns=[
 path('api/', include ('myRestApiApp.urls')), #<<--add this line in the list
 
 ]
+```
 
 8. finished!
 
