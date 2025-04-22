@@ -1,4 +1,6 @@
-# django_rest_admin
+# django_rest_admin_plus
+在django_rest_admin的基础上，解决外键仅支持sqlite3的问题，兼容mysql和postgresql
+
 Adding table CRUD rest api with admin ui and without coding.
 
 requirements:
